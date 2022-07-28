@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	ClientVersion = "0.1"
+	ClientVersion     = "0.1"
+	DefaultConfigFile = ".cos-cli.json"
 )
 
 // Config is cos-cli config
@@ -25,7 +26,7 @@ type AliasConfig struct {
 	BucketName string `json:"bucketName"`
 	Region     string `json:"region"`
 	SecretID   string `json:"secretID"`
-	SecretKey  string `json:"secret_key"`
+	SecretKey  string `json:"secretKey"`
 }
 
 // New returns the default *Config.
@@ -40,7 +41,7 @@ func New() *Config {
 func (c *Config) WriteTo(w io.Writer) (int64, error) {
 	c.mux.Lock()
 	defer c.mux.Unlock()
-	b, err := json.Marshal(c)
+	b, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
 		return 0, fmt.Errorf("couldn't marshal config: %w", err)
 	}
@@ -85,4 +86,22 @@ func Load(name string) (*Config, error) {
 		return nil, err
 	}
 	return cfg, nil
+}
+
+// LoadOrInit loads config from given file.
+// If file not exists, it will create file, and returns default config.
+func LoadOrInit(name string) (*Config, error) {
+	_, err := os.Stat(name)
+	if err != nil {
+		if os.IsNotExist(err) {
+			cfg := New()
+			if err := Save(cfg, name); err != nil {
+				return nil, err
+			}
+			return cfg, nil
+		} else {
+			return nil, err
+		}
+	}
+	return Load(name)
 }
