@@ -2,17 +2,19 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "cos-cli",
 	Short: "cos-cli - Client for tencent cloud object storage and filesystem",
-	Run: func(cmd *cobra.Command, args []string) {
-		// TODO(Kaiser925): subcommand add.
-		fmt.Println("cos-cli is working in progress")
-	},
+}
+
+func init() {
+	initAlias()
+	rootCmd.AddCommand(alias)
 }
 
 // Execute executes cos-cli command.

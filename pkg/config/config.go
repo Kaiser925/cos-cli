@@ -5,14 +5,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"os"
+	"path"
 	"sync"
 )
 
 const (
-	ClientVersion     = "0.1"
-	DefaultConfigFile = ".cos-cli.json"
+	ClientVersion = "0.1"
 )
+
+func DefaultConfigFile() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatalf("cannot load user home dir %v\n", err)
+	}
+	return path.Join(home, ".cos-cli.json")
+}
 
 // Config is cos-cli config
 type Config struct {
