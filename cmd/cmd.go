@@ -2,10 +2,17 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-
+	"github.com/Kaiser925/cos-cli/pkg/config"
 	"github.com/spf13/cobra"
+	"os"
+	"path"
 )
+
+var configDir string
+
+var preRunE = func(cmd *cobra.Command, args []string) error {
+	return config.LoadOrInit(path.Join(configDir, "config.json"))
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "cos-cli",
@@ -13,7 +20,9 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	initAlias()
+	home, _ := os.UserHomeDir()
+	defaultDir := path.Join(home, ".coscli")
+	rootCmd.PersistentFlags().StringVarP(&configDir, "config-dir", "C", defaultDir, "path to configuration folder")
 	rootCmd.AddCommand(alias)
 }
 

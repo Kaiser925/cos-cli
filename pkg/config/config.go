@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 	"sync"
@@ -14,14 +13,6 @@ import (
 const (
 	ClientVersion = "0.1"
 )
-
-func DefaultConfigFile() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatalf("cannot load user home dir %v\n", err)
-	}
-	return path.Join(home, ".cos-cli.json")
-}
 
 // Config is cos-cli config
 type Config struct {
@@ -104,6 +95,31 @@ func (c *Config) Load(name string) error {
 	return nil
 }
 
+func (c *Config) LoadOrInit(name string) error {
+	// create base dir if it not exists.
+	dir := path.Dir(name)
+	if _, err := os.Stat(dir); err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+		if err := os.MkdirAll(dir, 0750); err != nil {
+			return err
+		}
+	}
+
+	// stat config file, if not exists, create config file.
+	if _, err := os.Stat(name); err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+		if err := c.Save(name); err != nil {
+			return err
+		}
+	}
+
+	return c.Load(name)
+}
+
 // Save saves default config to file.
 func Save(name string) error {
 	return config.Save(name)
@@ -122,19 +138,8 @@ func SetAlias(alias string, cfg *AliasConfig) bool {
 	return config.SetAlias(alias, cfg)
 }
 
-// LoadOrInit loads config from given file.
+// LoadOrInit loads default config from given file.
 // If file not exists, it will create file, and returns default config.
-func LoadOrInit(name string) (*Config, error) {
-	_, err := os.Stat(name)
-	if err != nil {
-		if os.IsNotExist(err) {
-			if err := Save(name); err != nil {
-				return nil, err
-			}
-			return config, nil
-		} else {
-			return nil, err
-		}
-	}
-	return Load(name)
+func LoadOrInit(name string) error {
+	return config.LoadOrInit(name)
 }

@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"path"
 	"testing"
 )
 
@@ -65,14 +66,15 @@ func TestSave(t *testing.T) {
 }
 
 func TestLoadOrInit(t *testing.T) {
+	tmp := path.Join(os.TempDir(), "config.json")
 	defer os.Remove(tmp)
-	cfg, err := LoadOrInit(tmp)
+	err := LoadOrInit(tmp)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
 	want := New()
-	if !equal(cfg, want) {
-		t.Fatalf("want %+v got %+v", want, cfg)
+	if !equal(config, want) {
+		t.Fatalf("want %+v got %+v", want, config)
 	}
 
 	content := `{
