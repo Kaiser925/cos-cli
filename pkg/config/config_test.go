@@ -1,7 +1,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -51,11 +50,11 @@ func TestSave(t *testing.T) {
 	}
 
 	for i, test := range testcases {
-		err := Save(test.config, tmp)
+		err := test.config.Save(tmp)
 		if err != nil {
 			t.Fatalf("test case %d failed, got error %v", i+1, err)
 		}
-		b, err := ioutil.ReadFile(tmp)
+		b, err := os.ReadFile(tmp)
 		if err != nil {
 			t.Fatalf("test case %d failed, got error %v", i+1, err)
 		}
@@ -81,7 +80,7 @@ func TestLoadOrInit(t *testing.T) {
   "aliases": {}
 }`
 
-	b, err := ioutil.ReadFile(tmp)
+	b, err := os.ReadFile(tmp)
 	if err != nil {
 		t.Fatalf("read tmp file failed, got error %v", err)
 	}

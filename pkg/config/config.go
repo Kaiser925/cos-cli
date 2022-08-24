@@ -46,6 +46,12 @@ func New() *Config {
 	}
 }
 
+// config is inner default config
+var config = New()
+
+// Default returns the default config.
+func Default() *Config { return config }
+
 // WriteTo writes config data to w.
 func (c *Config) WriteTo(w io.Writer) (int64, error) {
 	c.mux.Lock()
@@ -57,15 +63,18 @@ func (c *Config) WriteTo(w io.Writer) (int64, error) {
 	return bytes.NewBuffer(b).WriteTo(w)
 }
 
-// SetAlias sets alias config
-func (c *Config) SetAlias(alias string, cfg *AliasConfig) {
+// SetAlias sets alias config, if alias exists, it will be updated
+// and return true.
+func (c *Config) SetAlias(alias string, cfg *AliasConfig) bool {
 	c.mux.Lock()
 	defer c.mux.Unlock()
+	_, ok := c.Aliases[alias]
 	c.Aliases[alias] = cfg
+	return ok
 }
 
 // Save saves config to file.
-func Save(c *Config, name string) error {
+func (c *Config) Save(name string) error {
 	f, err := os.Create(name)
 	if err != nil {
 		return err
@@ -78,23 +87,39 @@ func Save(c *Config, name string) error {
 	return nil
 }
 
-// Load loads config from file.
-func Load(name string) (*Config, error) {
+func (c *Config) Load(name string) error {
 	f, err := os.Open(name)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer f.Close()
 
 	b, err := io.ReadAll(f)
 	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(b, &c); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Save saves default config to file.
+func Save(name string) error {
+	return config.Save(name)
+}
+
+// Load loads default config from file.
+func Load(name string) (*Config, error) {
+	if err := config.Load(name); err != nil {
 		return nil, err
 	}
-	var cfg *Config
-	if err := json.Unmarshal(b, &cfg); err != nil {
-		return nil, err
-	}
-	return cfg, nil
+	return config, nil
+}
+
+// SetAlias sets an alias for default Config.
+func SetAlias(alias string, cfg *AliasConfig) bool {
+	return config.SetAlias(alias, cfg)
 }
 
 // LoadOrInit loads config from given file.
@@ -103,11 +128,10 @@ func LoadOrInit(name string) (*Config, error) {
 	_, err := os.Stat(name)
 	if err != nil {
 		if os.IsNotExist(err) {
-			cfg := New()
-			if err := Save(cfg, name); err != nil {
+			if err := Save(name); err != nil {
 				return nil, err
 			}
-			return cfg, nil
+			return config, nil
 		} else {
 			return nil, err
 		}
