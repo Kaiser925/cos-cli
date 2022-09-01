@@ -23,10 +23,9 @@ type Config struct {
 
 // AliasConfig is a COS bucket config.
 type AliasConfig struct {
-	BucketName string `json:"bucketName"`
-	Region     string `json:"region"`
-	SecretID   string `json:"secretID"`
-	SecretKey  string `json:"secretKey"`
+	URL       string `json:"url"`
+	SecretID  string `json:"secretID"`
+	SecretKey string `json:"secretKey"`
 }
 
 // New returns the default *Config.
@@ -62,6 +61,13 @@ func (c *Config) SetAlias(alias string, cfg *AliasConfig) bool {
 	_, ok := c.Aliases[alias]
 	c.Aliases[alias] = cfg
 	return ok
+}
+
+// GetAlias return the AliasConfig that named alias, if alias not
+// exist, it returns nil, false.
+func (c *Config) GetAlias(alias string) (*AliasConfig, bool) {
+	ac, ok := c.Aliases[alias]
+	return ac, ok
 }
 
 // Save saves config to file.
@@ -136,6 +142,11 @@ func Load(name string) (*Config, error) {
 // SetAlias sets an alias for default Config.
 func SetAlias(alias string, cfg *AliasConfig) bool {
 	return config.SetAlias(alias, cfg)
+}
+
+// GetAlias gets alias from default Config.
+func GetAlias(alias string) (*AliasConfig, bool) {
+	return config.GetAlias(alias)
 }
 
 // LoadOrInit loads default config from given file.

@@ -29,10 +29,9 @@ func TestSave(t *testing.T) {
 				Version: ClientVersion,
 				Aliases: map[string]*AliasConfig{
 					"a": {
-						BucketName: "bucket",
-						Region:     "region",
-						SecretID:   "id",
-						SecretKey:  "key",
+						URL:       "https://bucket.cos.region.myqcloud.com",
+						SecretID:  "id",
+						SecretKey: "key",
 					},
 				},
 			},
@@ -40,8 +39,7 @@ func TestSave(t *testing.T) {
   "version": "0.1",
   "aliases": {
     "a": {
-      "bucketName": "bucket",
-      "region": "region",
+      "url": "https://bucket.cos.region.myqcloud.com",
       "secretID": "id",
       "secretKey": "key"
     }

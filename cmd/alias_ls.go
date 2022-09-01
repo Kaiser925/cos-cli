@@ -16,8 +16,7 @@ var aliasLs = &cobra.Command{
 		maxLen := 12
 		for k, v := range config.Default().Aliases {
 			fmt.Println(k + ":")
-			printLine(prefix, "Bucket", v.BucketName, maxLen)
-			printLine(prefix, "Region", v.Region, maxLen)
+			printLine(prefix, "Bucket", v.URL, maxLen)
 			printLine(prefix, "SecretKey", v.SecretKey, maxLen)
 			printLine(prefix, "SecretID", v.SecretID, maxLen)
 		}
