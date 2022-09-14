@@ -9,9 +9,11 @@ import (
 )
 
 var configDir string
+var configFile string
 
 var preRunE = func(cmd *cobra.Command, args []string) error {
-	return config.LoadOrInit(path.Join(configDir, "config.json"))
+	configFile = path.Join(configDir, "config.json")
+	return config.LoadOrInit(configFile)
 }
 
 var rootCmd = &cobra.Command{

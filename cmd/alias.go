@@ -11,4 +11,5 @@ var alias = &cobra.Command{
 
 func init() {
 	alias.AddCommand(aliasLs)
+	alias.AddCommand(aliasSet)
 }
