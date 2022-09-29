@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+
 	"github.com/Kaiser925/cos-cli/pkg/config"
 	"github.com/spf13/cobra"
 )

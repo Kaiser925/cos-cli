@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/Kaiser925/cos-cli/pkg/config"
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/spf13/cobra"

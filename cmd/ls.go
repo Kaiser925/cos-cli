@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"context"
-	"github.com/Kaiser925/cos-cli/pkg/oss"
 	"io/fs"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/Kaiser925/cos-cli/pkg/config"
+	"github.com/Kaiser925/cos-cli/pkg/oss"
 	"github.com/spf13/cobra"
 )
 
