@@ -7,8 +7,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Kaiser925/cos-cli/pkg/cos"
+
 	"github.com/Kaiser925/cos-cli/pkg/config"
-	"github.com/Kaiser925/cos-cli/pkg/oss"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +33,7 @@ func list(ctx context.Context, name string) {
 
 	if alias, ok := config.GetAlias(name); ok {
 		var err error
-		fsys, err = oss.NewCOS(alias.URL, alias.SecretID, alias.SecretKey).BucketFS(ctx, "oss")
+		fsys, err = cos.NewCOS(alias.URL, alias.SecretID, alias.SecretKey).BucketFS(ctx, "cos")
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
