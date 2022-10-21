@@ -1,8 +1,8 @@
-package tool
+package trie
 
 import "testing"
 
-func TestPathSegmenter(t *testing.T) {
+func TestPathSegment(t *testing.T) {
 	cases := []struct {
 		key     string
 		parts   []string
