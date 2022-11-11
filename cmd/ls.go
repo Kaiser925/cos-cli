@@ -9,6 +9,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/Kaiser925/cos-cli/pkg/tool"
+
 	"github.com/jedib0t/go-pretty/v6/table"
 
 	"github.com/fatih/color"
@@ -64,11 +66,12 @@ func list(ctx context.Context, name string) {
 	for _, v := range entries {
 		i, _ := v.Info()
 		name := i.Name()
+		size := tool.GetByteSize(i.Size())
 		modTime := i.ModTime().Format("[2006-01-02 15:04:05]")
 		if i.IsDir() {
 			name = color.CyanString(i.Name())
 		}
-		rows = append(rows, table.Row{modTime, i.Size(), name})
+		rows = append(rows, table.Row{modTime, size, name})
 	}
 	t.AppendRows(rows)
 	fmt.Println(t.Render())
