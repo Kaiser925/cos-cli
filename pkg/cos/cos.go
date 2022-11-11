@@ -5,7 +5,11 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
+	"path"
+	"strings"
 	"time"
+
+	"github.com/Kaiser925/cos-cli/pkg/trie"
 
 	"github.com/tencentyun/cos-go-sdk-v5"
 )
@@ -13,12 +17,14 @@ import (
 const timeout = 10 * time.Second
 
 type COS struct {
-	cli *cos.Client
+	cli        *cos.Client
+	bucketName string
 }
 
 func NewCOS(URL string, secretID string, secretKey string) *COS {
 	u, _ := url.Parse(URL)
 	b := &cos.BaseURL{BucketURL: u}
+	bucketName, _, _ := strings.Cut(strings.Split(u.Host, ".")[0], "-")
 	return &COS{
 		cli: cos.NewClient(b, &http.Client{
 			Timeout: timeout,
@@ -27,54 +33,57 @@ func NewCOS(URL string, secretID string, secretKey string) *COS {
 				SecretKey: secretKey,
 			},
 		}),
+		bucketName: bucketName,
 	}
 }
 
-// BucketFS returns a file system (a fs.FS) for the tree of files rooted at the bucket.
-func (c *COS) BucketFS(ctx context.Context, name string) (fs.StatFS, error) {
-	opt := &cos.BucketGetOptions{}
-	b, _, err := c.cli.Bucket.Get(ctx, opt)
+func (c *COS) ReadDir(ctx context.Context, name string) ([]fs.DirEntry, error) {
+	b, _, err := c.cli.Bucket.Get(ctx, &cos.BucketGetOptions{})
 	if err != nil {
 		return nil, err
 	}
-	return &cosFS{cli: c.cli, bucket: b}, nil
-}
-
-type cosFS struct {
-	cli    *cos.Client
-	bucket *cos.BucketGetResult
-}
-
-func (c *cosFS) Open(name string) (fs.File, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (c *cosFS) Stat(name string) (fs.FileInfo, error) {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (c *cosFS) ReadDir(name string) ([]fs.DirEntry, error) {
-	entries := make([]fs.DirEntry, 0, len(c.bucket.Contents))
-	for _, v := range c.bucket.Contents {
-		entries = append(entries, &objectFile{v})
+	tree := trie.New[*objectFile](trie.PathSegment)
+	for _, obj := range b.Contents {
+		tree.Put(path.Join(c.bucketName, obj.Key), &objectFile{obj: obj})
 	}
-	return entries, nil
-}
 
-func (c *cosFS) ReadFile(name string) ([]byte, error) {
-	// TODO implement me
-	panic("implement me")
+	t, ok := tree.Get(strings.TrimSuffix(name, "/"))
+	if !ok {
+		return nil, fs.ErrNotExist
+	}
+
+	if t.Value != nil && !t.Value.IsDir() {
+		return []fs.DirEntry{t.Value}, nil
+	}
+
+	var dirs []fs.DirEntry
+	for _, v := range t.Children {
+		if v.Value != nil {
+			dirs = append(dirs, v.Value)
+		}
+	}
+	return dirs, nil
 }
 
 type objectFile struct {
 	obj cos.Object
 }
 
+// implements fs.File for objectFile
+
+func (o *objectFile) Read([]byte) (int, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (o *objectFile) Stat() (fs.FileInfo, error) { return o, nil }
+func (o *objectFile) Close() error               { return nil }
+
+// implements fs.FileInfo && fs.DirEntry for objectFile
+
 func (o *objectFile) Type() fs.FileMode          { return o.Mode() }
 func (o *objectFile) Info() (fs.FileInfo, error) { return o, nil }
-func (o *objectFile) Name() string               { return o.obj.Key }
+func (o *objectFile) Name() string               { return path.Base(o.obj.Key) }
 func (o *objectFile) Size() int64                { return o.obj.Size }
 func (o *objectFile) IsDir() bool {
 	return o.obj.Size == 0
@@ -92,3 +101,13 @@ func (o *objectFile) ModTime() time.Time {
 	t, _ := time.Parse(time.RFC3339, o.obj.LastModified)
 	return t
 }
+
+type fakeRootDir struct{}
+
+func (o *fakeRootDir) Type() fs.FileMode  { return fs.ModeDir }
+func (o *fakeRootDir) Name() string       { return "" }
+func (o *fakeRootDir) Size() int64        { return 0 }
+func (o *fakeRootDir) IsDir() bool        { return true }
+func (o *fakeRootDir) Sys() any           { return nil }
+func (o *fakeRootDir) Mode() fs.FileMode  { return fs.ModeDir }
+func (o *fakeRootDir) ModTime() time.Time { return time.Now() }
