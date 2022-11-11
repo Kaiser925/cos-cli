@@ -1,42 +1,41 @@
 package trie
 
 type Tree[T any] struct {
-	children map[string]*Tree[T]
-	segment  StringSegmentFunc
+	Children map[string]*Tree[T]
+	Value    T
 
-	value T
+	segment StringSegmentFunc
 }
 
-func New[T any](val T, seg StringSegmentFunc) *Tree[T] {
+func New[T any](seg StringSegmentFunc) *Tree[T] {
+	var none T
 	return &Tree[T]{
-		value:    val,
-		children: make(map[string]*Tree[T]),
+		Value:    none,
+		Children: make(map[string]*Tree[T]),
 		segment:  seg,
 	}
 }
 
-func (t *Tree[T]) Get(name string) (T, bool) {
+func (t *Tree[T]) Get(name string) (*Tree[T], bool) {
 	node := t
 	for part, i := t.segment(name, 0); part != ""; part, i = t.segment(name, i) {
-		node = node.children[part]
+		node = node.Children[part]
 		if node == nil {
-			var none T
-			return none, false
+			return nil, false
 		}
 	}
-	return node.value, true
+	return node, true
 }
 
 func (t *Tree[T]) Put(name string, val T) {
 	node := t
 	for part, i := t.segment(name, 0); part != ""; part, i = t.segment(name, i) {
-		child, ok := node.children[part]
+		child, ok := node.Children[part]
 		if !ok {
-			var none T
-			child = New[T](none, t.segment)
-			node.children[part] = child
+			child = New[T](t.segment)
+			node.Children[part] = child
 		}
 		node = child
 	}
-	node.value = val
+	node.Value = val
 }
