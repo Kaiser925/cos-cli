@@ -47,17 +47,19 @@ func list(ctx context.Context, name string) {
 			log.Fatalln(err.Error())
 		}
 	} else {
-		entries, err = os.ReadDir(name)
+		info, err := os.Stat(name)
 		if err != nil {
 			log.Fatalln(err.Error())
 		}
+		if !info.IsDir() {
+			entries = []fs.DirEntry{fileEntry(info)}
+		} else {
+			entries, err = os.ReadDir(name)
+			if err != nil {
+				log.Fatalln(err.Error())
+			}
+		}
 	}
-
-	t := table.NewWriter()
-	style := table.StyleDefault
-	style.Options.DrawBorder = false
-	style.Box.MiddleVertical = ""
-	t.SetStyle(style)
 
 	sort.Slice(entries, func(i, j int) bool {
 		return entries[i].Name() < entries[j].Name()
@@ -73,6 +75,39 @@ func list(ctx context.Context, name string) {
 		}
 		rows = append(rows, table.Row{modTime, size, name})
 	}
+	printTable(rows)
+}
+
+type wrapper struct {
+	info fs.FileInfo
+}
+
+func (w wrapper) Name() string {
+	return w.info.Name()
+}
+
+func (w wrapper) IsDir() bool {
+	return w.info.IsDir()
+}
+
+func (w wrapper) Type() fs.FileMode {
+	return w.info.Mode()
+}
+
+func (w wrapper) Info() (fs.FileInfo, error) {
+	return w.info, nil
+}
+
+func fileEntry(info fs.FileInfo) fs.DirEntry {
+	return wrapper{info: info}
+}
+
+func printTable(rows []table.Row) {
+	t := table.NewWriter()
+	style := table.StyleDefault
+	style.Options.DrawBorder = false
+	style.Box.MiddleVertical = ""
+	t.SetStyle(style)
 	t.AppendRows(rows)
 	fmt.Println(t.Render())
 }
