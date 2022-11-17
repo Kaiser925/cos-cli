@@ -15,6 +15,7 @@ var aliasLs = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		prefix := "  "
 		maxLen := 12
+		fmt.Println("Config file:", configFile)
 		for k, v := range config.Default().Aliases {
 			fmt.Println(k + ":")
 			printLine(prefix, "Bucket", v.URL, maxLen)
