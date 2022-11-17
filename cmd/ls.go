@@ -42,7 +42,7 @@ func list(ctx context.Context, name string) {
 
 	ss := strings.Split(name, "/")
 	if alias, ok := config.GetAlias(ss[0]); ok {
-		entries, err = cos.NewCOS(alias.URL, alias.SecretID, alias.SecretKey).ReadDir(ctx, name)
+		entries, err = cos.NewCOS(ss[0], alias.URL, alias.SecretID, alias.SecretKey).ReadDir(ctx, name)
 		if err != nil {
 			log.Fatalln(err.Error())
 		}

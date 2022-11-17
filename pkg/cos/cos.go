@@ -17,14 +17,13 @@ import (
 const timeout = 10 * time.Second
 
 type COS struct {
-	cli        *cos.Client
-	bucketName string
+	cli   *cos.Client
+	alias string
 }
 
-func NewCOS(URL string, secretID string, secretKey string) *COS {
+func NewCOS(alias string, URL string, secretID string, secretKey string) *COS {
 	u, _ := url.Parse(URL)
 	b := &cos.BaseURL{BucketURL: u}
-	bucketName, _, _ := strings.Cut(strings.Split(u.Host, ".")[0], "-")
 	return &COS{
 		cli: cos.NewClient(b, &http.Client{
 			Timeout: timeout,
@@ -33,7 +32,7 @@ func NewCOS(URL string, secretID string, secretKey string) *COS {
 				SecretKey: secretKey,
 			},
 		}),
-		bucketName: bucketName,
+		alias: alias,
 	}
 }
 
@@ -44,7 +43,7 @@ func (c *COS) ReadDir(ctx context.Context, name string) ([]fs.DirEntry, error) {
 	}
 	tree := trie.New[*objectFile](trie.PathSegment)
 	for _, obj := range b.Contents {
-		tree.Put(path.Join(c.bucketName, obj.Key), &objectFile{obj: obj})
+		tree.Put(path.Join(c.alias, obj.Key), &objectFile{obj: obj})
 	}
 
 	t, ok := tree.Get(strings.TrimSuffix(name, "/"))
