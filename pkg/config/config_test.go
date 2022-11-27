@@ -101,3 +101,18 @@ func equal(x *Config, y *Config) bool {
 	}
 	return true
 }
+
+func TestConfig_RemoveAlias(t *testing.T) {
+	SetAlias("alias", nil)
+	_, ok := GetAlias("alias")
+	if !ok {
+		t.Error("got alias failed, want ture, got false")
+	}
+	RemoveAlias("alias")
+	_, ok = Default().GetAlias("alias")
+	if ok {
+		t.Error("remove alias failed")
+	}
+	// remove alias not exist
+	RemoveAlias("alias")
+}

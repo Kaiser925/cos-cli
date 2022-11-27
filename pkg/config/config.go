@@ -63,6 +63,13 @@ func (c *Config) SetAlias(alias string, cfg *AliasConfig) bool {
 	return ok
 }
 
+// RemoveAlias removes alias from config.
+func (c *Config) RemoveAlias(alias string) {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+	delete(c.Aliases, alias)
+}
+
 // GetAlias return the AliasConfig that named alias, if alias not
 // exist, it returns nil, false.
 func (c *Config) GetAlias(alias string) (*AliasConfig, bool) {
@@ -108,7 +115,7 @@ func (c *Config) LoadOrInit(name string) error {
 		if !os.IsNotExist(err) {
 			return err
 		}
-		if err := os.MkdirAll(dir, 0750); err != nil {
+		if err := os.MkdirAll(dir, 0o750); err != nil {
 			return err
 		}
 	}
@@ -142,6 +149,12 @@ func Load(name string) (*Config, error) {
 // SetAlias sets an alias for default Config.
 func SetAlias(alias string, cfg *AliasConfig) bool {
 	return config.SetAlias(alias, cfg)
+}
+
+// RemoveAlias remove alias from default Config.
+func RemoveAlias(alias string) {
+	config.RemoveAlias(alias)
+	return
 }
 
 // GetAlias gets alias from default Config.
