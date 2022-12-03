@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"io/fs"
 	"log"
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/Kaiser925/cos-cli/pkg/output"
 
 	"github.com/Kaiser925/cos-cli/pkg/tool"
 
@@ -64,7 +65,7 @@ func list(ctx context.Context, name string) {
 	sort.Slice(entries, func(i, j int) bool {
 		return entries[i].Name() < entries[j].Name()
 	})
-	rows := make([]table.Row, 0, len(entries))
+	rows := make([][]any, 0, len(entries))
 	for _, v := range entries {
 		i, _ := v.Info()
 		name := i.Name()
@@ -75,7 +76,7 @@ func list(ctx context.Context, name string) {
 		}
 		rows = append(rows, table.Row{modTime, size, name})
 	}
-	printTable(rows)
+	output.Table(rows)
 }
 
 type wrapper struct {
@@ -100,14 +101,4 @@ func (w wrapper) Info() (fs.FileInfo, error) {
 
 func fileEntry(info fs.FileInfo) fs.DirEntry {
 	return wrapper{info: info}
-}
-
-func printTable(rows []table.Row) {
-	t := table.NewWriter()
-	style := table.StyleDefault
-	style.Options.DrawBorder = false
-	style.Box.MiddleVertical = ""
-	t.SetStyle(style)
-	t.AppendRows(rows)
-	fmt.Println(t.Render())
 }

@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path"
+
+	"github.com/Kaiser925/cos-cli/pkg/output"
 
 	"github.com/Kaiser925/cos-cli/pkg/config"
 	"github.com/spf13/cobra"
@@ -35,7 +36,6 @@ func init() {
 // Execute executes cos-cli command.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		output.Fatal(err.Error())
 	}
 }

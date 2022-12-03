@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"github.com/Kaiser925/cos-cli/pkg/output"
 
 	"github.com/Kaiser925/cos-cli/pkg/config"
 	"github.com/spf13/cobra"
@@ -20,7 +20,7 @@ Example:
 	Run: func(cmd *cobra.Command, args []string) {
 		config.RemoveAlias(args[0])
 		if err := config.Save(configFile); err != nil {
-			fmt.Printf("save config failed: %v\n", err)
+			output.Fatalf("save config failed: %v\n", err)
 		}
 	},
 }

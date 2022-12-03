@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Kaiser925/cos-cli/pkg/output"
+
 	"github.com/Kaiser925/cos-cli/pkg/config"
 	"github.com/spf13/cobra"
 )
@@ -31,7 +33,7 @@ Example:
 			SecretKey: key,
 		})
 		if err := config.Save(configFile); err != nil {
-			fmt.Printf("save config failed: %v\n", err)
+			output.Fatalf("save config failed: %v\n", err)
 		}
 		fmt.Printf("%s is ready\n", name)
 	},

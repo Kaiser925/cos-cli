@@ -3,8 +3,9 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/Kaiser925/cos-cli/pkg/output"
+
 	"github.com/Kaiser925/cos-cli/pkg/config"
-	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/spf13/cobra"
 )
 
@@ -14,17 +15,24 @@ var aliasLs = &cobra.Command{
 	PreRunE: preRunE,
 	Run: func(cmd *cobra.Command, args []string) {
 		prefix := "  "
-		maxLen := 12
 		fmt.Println("Config file:", configFile)
 		for k, v := range config.Default().Aliases {
 			fmt.Println(k + ":")
-			printLine(prefix, "Bucket", v.URL, maxLen)
-			printLine(prefix, "SecretKey", v.SecretKey, maxLen)
-			printLine(prefix, "SecretID", v.SecretID, maxLen)
+			kvs := []output.KVPair{
+				{
+					Key: "Bucket",
+					Val: v.URL,
+				},
+				{
+					Key: "SecretKey",
+					Val: v.SecretKey,
+				},
+				{
+					Key: "SecretID",
+					Val: v.SecretID,
+				},
+			}
+			output.KeyValues(prefix, kvs)
 		}
 	},
-}
-
-func printLine(prefix, key, val string, maxLength int) {
-	fmt.Println(prefix + text.AlignJustify.Apply(fmt.Sprintf("%s :", key), maxLength) + " " + val)
 }
